@@ -1,0 +1,34 @@
+Guided Mode:
+Q: How many TCP ports are open?
+A: 2
+nmap -Pn -sV -T4 -O <IP>                  (also indicated redirect to http://2Million.htb , so add it to /etc/hosts)
+
+Q: What is the name of the JavaScript file loaded by the /invite page that has to do with invite codes?
+A: inviteapi
+Open http://2Million.htb/invite ,  F12 -> Debugger , it reveals "js" folder that contain "inviteapi.min.js"
+
+Q: What JavaScript function on the invite page returns the first hint about how to get an invite code? Don't include () in the answer.
+A: makeInviteCode
+By going to "http://2million.htb/js/inviteapi.min.js" there's functions lists:
+'response|function|log|console|code|dataType|json|POST|formData|ajax|type|url|success|api/v1|invite|error|data|var|verifyInviteCode|makeInviteCode|how|to|generate|verify'
+                                                                                                                                    ^^^^^^^^^^^^^^
+Open http://2Million.htb/invite -> F12 -> console , type makeInviteCode() , it will return:
+```Object { 0: 200, success: 1, data: {…}, hint: "Data is encrypted ... We should probbably check the encryption type in order to decrypt it..." }
+0: 200
+data: Object { data: "Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/trarengr", enctype: "ROT13" }
+​data: "Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/trarengr"
+​enctype: "ROT13"```
+
+(Alternative)-> https://beautifier.io/ -> paste in the code from "http://2million.htb/js/inviteapi.min.js" and make sure to select "Detect packers and obfuscators? (unsafe)"
+we'll get 2 urls:
+  url: '/api/v1/invite/verify',
+  url: '/api/v1/invite/how/to/generate',    ----> curl -X POST http://2million.htb/api/v1/invite/how/to/generate
+
+https://gchq.github.io/CyberChef/      <--- help with decrypting ROT13
+results:
+"  In order to generate the invite code, make a POST request to /api/v1/invite/generate "
+curl -X POST http://2million.htb/api/v1/invite/generate
+
+we should get: {"0":200,"success":1,"data":{"code":"WFdYNzgtRjQzNU4tUTJSOVMtUU0wSlY=","format":"encoded"}}                                                                             
+                                                      ^^^^^^^^^^^^^^^^^^^----> its base64, decoded: XWX78-F435N-Q2R9S-QM0JV
+                    
