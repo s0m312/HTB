@@ -33,7 +33,9 @@ Note: Make sure to test it first with the flag "-t"
 
 Q: Submit the flag located in the root user's home directory.
 A: 1c7373279ff8506fea6dc101fa2730e4
-
+from target shell >  curl localhost:1233/root/root.txt
+Could of also make ssh key to login as root if needed.
++++++++++++++
 another note, since user can run as sudo nginx, i had to update the config so it will run a server with root privs, Ippsec walkthrough helped with edit the nginx.conf file,
 The updated nginx.conf file:
 ''''''''
