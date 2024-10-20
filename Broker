@@ -1,0 +1,56 @@
+Guided:
+Q: Which open TCP port is running the ActiveMQ service?
+A: 61616
+nmap -p- -sV -sC <IP>
+
+Q: What is the version of the ActiveMQ service running on the box?
+A: 5.15.15
+
+Q: What is the 2023 CVE-ID for a remote code execution vulnerability in the ActiveMQ version running on Broker?
+A: CVE-2023-46604
+A quick search in google for ActiveMQ will show known vulns, msfconsole found it also.
+
+Q: What user is the ActiveMQ service running as on Broker?
+A: activemq
+
+Q: Submit the flag located in the activemq user's home directory.
+A: dcbe3e6670a649c8f04bec7180c04f90
+
+Q: What is the full path of the binary that the activemq user can run as any other user with sudo?
+A: /usr/sbin/nginx
+found via " sudo -l"
+
+Q: Which nginx directive can be used to define allowed WebDAV methods?
+A: dav_methods
+A quick google search will reveal
+
+Q: Which HTTP method is used to write files via the WebDAV protocol?
+A: PUT
+
+Q: Which flag is used to set a custom nginx configuration by specifying a file?
+A: -c
+Note: Make sure to test it first with the flag "-t"
+
+Q: Submit the flag located in the root user's home directory.
+A: 1c7373279ff8506fea6dc101fa2730e4
+
+another note, since user can run as sudo nginx, i had to update the config so it will run a server with root privs, Ippsec walkthrough helped with edit the nginx.conf file,
+The updated nginx.conf file:
+''''''''
+user root;
+worker_processes auto;
+pid /run/nginx2.pid;
+include /etc/nginx/modules-enabled/*.conf;
+events {
+        worker_connections 768;
+}
+http {
+	server {
+		listen 1233;
+		location / {
+		root /;
+		}
+
+	}
+}
+''''''''''
