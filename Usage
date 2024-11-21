@@ -32,6 +32,7 @@ A: laravel-admin
 Q: What is the 2023 CVE ID for an arbitrary file upload vulnerability that leads to remote code execution in this version of Laravel-Admin?
 A: CVE-2023-24249
 Note: all was needed is to upload an webshell as img,example 'img.jpg' and intercept it with burp and add .php to the ending of the file name, base64 encode /dev/tcp and let it return back to me. 
+https://flyd.uk/post/cve-2023-24249/
 Also found db creds:
 DB_USERNAME=staff
 DB_PASSWORD=s3cr3t_c0d3d_1uth
